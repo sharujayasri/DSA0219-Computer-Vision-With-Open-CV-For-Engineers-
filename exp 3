@@ -1,0 +1,6 @@
+from PIL import Image, ImageFilter 
+image = Image.open("C:/Users/Asus/Downloads/rat images.jpeg") 
+
+image = image.filter(ImageFilter.GaussianBlur) 
+
+image.show()
