@@ -1,0 +1,6 @@
+import cv2
+import numpy as np
+img= cv2.imread("C:/Users/Asus/Downloads/rat images.jpeg", cv2.IMREAD_GRAYSCALE)
+equalized_img= cv2.equalizeHist(img)
+comparison=np.hstack((img,equalized_img))
+cv2.imshow("Original vs Equalized",comparison)
