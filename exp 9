@@ -1,0 +1,24 @@
+import cv2
+def display_webcam(speed_factor):
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Cannot access the webcam.")
+        return
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    if fps == 0:  
+        fps = 30   
+    delay = int((1000 / fps) * speed_factor)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Cannot read from the webcam.")
+            break
+        cv2.imshow('Webcam Video', frame)
+        if cv2.waitKey(delay) & 0xFF == ord('q'):
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+
+display_webcam(1.0)  
+display_webcam(2.0)  
+display_webcam(0.5) 
