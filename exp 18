@@ -1,0 +1,12 @@
+import cv2
+def read_mirror_image(image_path):
+    image = cv2.imread(image_path)
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    height, width = gray_image.shape
+    lower_half = gray_image[height // 2:, :]
+    mirrored_half = cv2.flip(lower_half, 0)
+    gray_image[0:height // 2, :] = mirrored_half
+    return gray_image
+image_path = "D:/Dora.jpeg"
+result_image = read_mirror_image(image_path)
+cv2.imshow("Mirrored Image", result_image)
