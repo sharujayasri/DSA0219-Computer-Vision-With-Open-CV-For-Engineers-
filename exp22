@@ -1,0 +1,17 @@
+import cv2
+import numpy as np
+img = cv2.imread("C:/Users/Asus/Downloads/rat images.jpeg", cv2.IMREAD_GRAYSCALE)
+
+prewitt_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]], dtype=np.float32)
+prewitt_y = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]], dtype=np.float32)
+
+edges_x = cv2.filter2D(img, cv2.CV_32F, prewitt_x)
+edges_y = cv2.filter2D(img, cv2.CV_32F, prewitt_y)
+
+edges = cv2.magnitude(edges_x, edges_y)
+
+edges = cv2.normalize(edges, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
+cv2.imshow('Prewitt Edge Detection', edges)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
