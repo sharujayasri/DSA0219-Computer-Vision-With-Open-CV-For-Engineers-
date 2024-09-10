@@ -1,0 +1,19 @@
+import cv2
+import numpy as np
+image = cv2.imread("C:/Users/Asus/Downloads/rat images.jpeg", 0)
+
+kernel = np.ones((5,5), np.uint8)
+
+opened_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+
+closed_image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
+
+gradient_image = cv2.morphologyEx(image, cv2.MORPH_GRADIENT, kernel)
+
+tophat_image = cv2.morphologyEx(image, cv2.MORPH_TOPHAT, kernel)
+
+cv2.imshow('Original Image', image)
+cv2.imshow('Opening', opened_image)
+cv2.imshow('Closing', closed_image)
+cv2.imshow('Gradient', gradient_image)
+cv2.imshow('Top Hat', tophat_image)
