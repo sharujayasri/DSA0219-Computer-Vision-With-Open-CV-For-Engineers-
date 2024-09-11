@@ -1,0 +1,10 @@
+import cv2
+import numpy as np
+img =cv2.imread("D:/Shinchan.jpeg",cv2.IMREAD_GRAYSCALE)
+laplacian_kernel = np.array([[0,1,0],
+                             [1,-4,1],
+                             [0,1,0]])
+laplacian= cv2.filter2D(img, -1,laplacian_kernel)
+sharpened= cv2.add(img,laplacian)
+cv2.imshow('Original Image', img)
+cv2.imshow('Sharpened Image', sharpened)
