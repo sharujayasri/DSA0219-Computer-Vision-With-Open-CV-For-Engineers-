@@ -1,0 +1,24 @@
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+
+def region_growing(img, seed, threshold=10):
+    output = np.zeros_like(img)
+    region_pixels = [seed]
+    output[seed] = 255
+
+    while region_pixels:
+        x, y = region_pixels.pop(0)
+        for nx, ny in [(x-1,y), (x+1,y), (x,y-1), (x,y+1)]:
+            if 0 <= nx < img.shape[0] and 0 <= ny < img.shape[1] and output[nx, ny] == 0:
+                if abs(int(img[x, y]) - int(img[nx, ny])) < threshold:
+                    output[nx, ny] = 255
+                    region_pixels.append((nx, ny))
+    return output
+
+image = cv2.imread("C:/Users/Asus/Downloads/rat images.jpeg", 0)  # Replace with your image
+segmented = region_growing(image, (100, 100))
+
+plt.subplot(1, 2, 1), plt.imshow(image, cmap='gray'), plt.title("Original")
+plt.subplot(1, 2, 2), plt.imshow(segmented, cmap='gray'), plt.title("Segmented")
+plt.show()
