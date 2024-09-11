@@ -1,0 +1,22 @@
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+
+# Load left and right images
+left_img = cv2.imread("C:/Users/Asus/Downloads/rat images.jpeg", 0)
+right_img = cv2.imread("C:/Users/Asus/Downloads/rat images.jpeg"
+, 0)
+
+# Create a stereo block matching object
+stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15)
+
+# Compute the disparity map
+disparity = stereo.compute(left_img, right_img)
+
+# Normalize the result for display
+disparity_normalized = cv2.normalize(disparity, None, 0, 255, cv2.NORM_MINMAX)
+
+# Display the disparity map
+plt.imshow(disparity_normalized, cmap='gray')
+plt.title('Disparity Map (Depth Estimation)')
+plt.show()
