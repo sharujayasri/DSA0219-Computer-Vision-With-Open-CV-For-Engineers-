@@ -1,0 +1,50 @@
+import cv2
+import numpy as np
+
+# Load two consecutive images
+prev_img = cv2.imread("C:/Users/Asus/Downloads/img1.jpg", 0)  # First frame
+next_img = cv2.imread("C:/Users/Asus/Downloads/img2.jpg", 0)  # Second frame
+
+# Calculate optical flow using Lucas-Kanade method
+lk_params = dict(winSize=(15, 15), maxLevel=2, criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
+prev_pts = cv2.goodFeaturesToTrack(prev_img, mask=None, **dict(maxCorners=100, qualityLevel=0.3, minDistance=7, blockSize=7))
+
+next_pts, status, _ = cv2.calcOpticalFlowPyrLK(prev_img, next_img, prev_pts, None, **lk_params)
+
+# Draw the tracks
+for i, (new, old) in enumerate(zip(next_pts, prev_pts)):
+    if status[i] == 1:
+        a, b = new.ravel()
+        c, d = old.ravel()
+        cv2.line(next_img, (a, b), (c, d), (0, 255, 0), 2)
+        cv2.circle(next_img, (a, b), 5, (0, 255, 0), -1)
+
+# Display the results
+cv2.imshow('Optical Flow - Lucas Kanade', next_img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+
+# Load two consecutive images
+prev_img = cv2.imread("C:/Users/Asus/Downloads/img1.jpg", 0)
+next_img = cv2.imread("C:/Users/Asus/Downloads/img2.jpg", 0)
+
+# Calculate dense optical flow using Farneback method
+flow = cv2.calcOpticalFlowFarneback(prev_img, next_img, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+# Convert flow into polar coordinates to visualize motion direction and magnitude
+magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+hsv = np.zeros_like(cv2.cvtColor(prev_img, cv2.COLOR_GRAY2BGR))
+hsv[..., 0] = angle * 180 / np.pi / 2  # Hue
+hsv[..., 1] = 255  # Saturation
+hsv[..., 2] = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX)  # Value
+
+flow_rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+
+# Display the results
+plt.imshow(flow_rgb)
+plt.title('Dense Optical Flow - Farneback')
+plt.show()
+
