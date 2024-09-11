@@ -1,0 +1,41 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+image = cv2.imread('D:/Shinchan.jpeg', cv2.IMREAD_GRAYSCALE)
+h, w = image.shape
+flattened_image = image.reshape(-1, w)
+
+flattened_image = np.float32(flattened_image)
+
+mean, eigenvectors = cv2.PCACompute(flattened_image, mean=None)
+
+num_components = 50  
+projected_image = cv2.PCAProject(flattened_image, mean, eigenvectors[:num_components])
+
+reconstructed_image = cv2.PCABackProject(projected_image, mean,
+                                         eigenvectors[:num_components])
+
+reconstructed_image = reconstructed_image.reshape(h, w)
+
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 2, 1)
+plt.title('Original Image')
+plt.imshow(image, cmap='gray')
+
+plt.subplot(1, 2, 2)
+plt.title('Reconstructed Image using PCA')
+plt.imshow(reconstructed_image, cmap='gray')
+
+plt.tight_layout()
+plt.show()
+
+explained_variance = np.var(projected_image, axis=0) / np.var(flattened_image, axis=0).sum()
+plt.figure(figsize=(8, 4))
+plt.plot(np.cumsum(explained_variance))
+plt.title('Explained Variance by Principal Components')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('Cumulative Explained Variance')
+plt.grid()
+plt.show()
