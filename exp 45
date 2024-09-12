@@ -1,0 +1,80 @@
+import cv2
+import numpy as np
+from skimage.feature import local_binary_pattern
+from sklearn.cluster import KMeans
+from scipy.ndimage import gaussian_filter
+
+# Extract LBP features for texture analysis
+def extract_lbp_features(img, radius=3, n_points=8 * 3):
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    lbp = local_binary_pattern(gray_img, n_points, radius, method='uniform')
+    return lbp
+
+# Markov Random Field Segmentation
+def mrf_segmentation(img, n_segments=4):
+    # Step 1: Extract texture features using LBP
+    lbp = extract_lbp_features(img)
+    
+    # Step 2: Preprocess LBP image with Gaussian filter to smooth it
+    lbp_smooth = gaussian_filter(lbp, sigma=1)
+
+    # Step 3: K-means clustering for initial labeling (clusters represent different textures)
+    features = lbp_smooth.flatten().reshape(-1, 1)
+    kmeans = KMeans(n_clusters=n_segments, random_state=42).fit(features)
+    initial_labels = kmeans.labels_.reshape(lbp.shape)
+
+    # Step 4: Define Potentials (Unary and Pairwise)
+    def unary_potential(label_img, labels):
+        # Define unary potential as the likelihood of label fitting
+        potentials = np.zeros((label_img.shape[0], label_img.shape[1], n_segments))
+        for i in range(n_segments):
+            potentials[:, :, i] = (label_img != i).astype(float)
+        return potentials
+
+    def pairwise_potential(label_img):
+        # Pairwise potential enforces smoothness (penalizing neighboring pixels with different labels)
+        return np.sum(np.abs(np.diff(label_img, axis=0))) + np.sum(np.abs(np.diff(label_img, axis=1)))
+
+    # Step 5: Iterated Conditional Modes (ICM) for energy minimization
+    def icm_optimization(label_img, max_iter=10):
+        for _ in range(max_iter):
+            for i in range(1, label_img.shape[0] - 1):
+                for j in range(1, label_img.shape[1] - 1):
+                    local_region = label_img[i-1:i+2, j-1:j+2]  # 3x3 window
+                    best_label = label_img[i, j]
+                    min_energy = float('inf')
+                    
+                    for label in range(n_segments):
+                        label_img[i, j] = label
+                        unary = unary_potential(label_img, label)
+                        pairwise = pairwise_potential(label_img)
+                        energy = unary[i, j, label] + pairwise
+                        
+                        if energy < min_energy:
+                            min_energy = energy
+                            best_label = label
+                            
+                    label_img[i, j] = best_label
+        return label_img
+
+    # Step 6: Optimize labels using ICM
+    final_labels = icm_optimization(initial_labels)
+
+    return final_labels
+
+# Main function to run MRF-based texture segmentation
+def main():
+    # Load an example image
+    img = cv2.imread("C:/Users/Asus/Downloads/img1.jpg")
+
+    # Perform MRF-based segmentation
+    segmented_img = mrf_segmentation(img, n_segments=4)
+
+    # Show the result
+    segmented_img = (segmented_img * (255 / (segmented_img.max() - segmented_img.min()))).astype('uint8')
+    cv2.imshow('Segmented Image', segmented_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
