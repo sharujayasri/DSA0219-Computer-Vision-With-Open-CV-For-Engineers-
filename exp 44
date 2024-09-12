@@ -1,0 +1,50 @@
+import cv2
+import numpy as np
+from skimage.feature import local_binary_pattern
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, accuracy_score
+
+# Gabor filter generation
+def build_gabor_filters():
+    filters = []
+    for theta in np.arange(0, np.pi, np.pi / 8):
+        for sigma in [1, 3]:
+            for lambd in np.arange(0.05, 0.5, 0.1):
+                kern = cv2.getGaborKernel((31, 31), sigma, theta, lambd * 31, 0.5, 0, cv2.CV_32F)
+                filters.append(kern)
+    return filters
+
+# Apply Gabor filters
+def apply_gabor_filters(img, filters):
+    return [cv2.filter2D(img, cv2.CV_8UC3, kern) for kern in filters]
+
+# LBP feature extraction
+def extract_lbp_features(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    lbp = local_binary_pattern(gray, 24, 3, method='uniform')
+    (hist, _) = np.histogram(lbp.ravel(), bins=np.arange(0, 26), range=(0, 26))
+    return hist.astype("float") / (hist.sum() + 1e-7)
+
+# Extract combined Gabor and LBP features
+def extract_features(img):
+    filters = build_gabor_filters()
+    gabor_features = np.array([np.mean(f) for f in apply_gabor_filters(img, filters)])
+    lbp_features = extract_lbp_features(img)
+    return np.hstack((gabor_features, lbp_features))
+
+# Load dataset and train/test classifier
+def main():
+    # Example for loading images (modify the folder path and class structure)
+    X, y, class_names = load_images_and_labels("C:/Users/Asus/Downloads/archive (1).zip")  # Define your dataset
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    
+    clf = SVC(kernel='linear', random_state=42)
+    clf.fit(X_train, y_train)
+    
+    y_pred = clf.predict(X_test)
+    print(f"Accuracy: {accuracy_score(y_test, y_pred)}")
+    print(classification_report(y_test, y_pred, target_names=class_names))
+
+if __name__ == "__main__":
+    main()
